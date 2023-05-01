@@ -1,3 +1,10 @@
+# This is very much WIP.
+Namely I need to work on:
+
+- Its not at all generic.
+- There are no tests.
+- ReadMe sucks.
+
 # Aim
 
 The aim of this project is to generate a yaml which is a custom resources of type `applications.argoproj.io`. This yaml should describe an application in a given repository. So that doing `kubectl apply -f thisyaml.yaml` will delpoy the application to ArgoCD which will the deploy it correctly to the cluster itself.
