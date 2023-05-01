@@ -1,0 +1,38 @@
+# Compiled Python files
+*.pyc
+__pycache__/
+
+# Distribution / packaging files
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+.pip/
+.venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE files
+.vscode/
+.idea/
+
+# Log files
+*.log
+
+# Compiled binary files
+*.so
+*.o
+
+# Miscellaneous
+.DS_Store
+*.pyc
+Thumbs.db
+*.bak
+*.swp
+
+# generated_apps
+generated_apps/
