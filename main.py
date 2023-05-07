@@ -24,6 +24,7 @@ with open(join(dirname(__file__), "app.tpl")) as f:
 
 #   1.2. Load ignore differences
 ignore_differences = {
+    "metallb": [IgnoreDifference("apiextensions.k8s.io", Kind.CustomResourceDefinition, ["/spec/conversion"])],
     "datree": [IgnoreDifference("", Kind.Secret, ["/data"])],
     "cilium": [IgnoreDifference("", Kind.Secret, ["/data"])],
     "argocd": [IgnoreDifference("", Kind.Secret, ["/data/admin.passwordMtime"])],
