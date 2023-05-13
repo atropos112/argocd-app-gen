@@ -35,7 +35,7 @@ for infra in config["infrastructures"]:
                 repo_url=infra["repo_url"],
                 template=template,
             ),
-            overrides= infra.get("overrides", {}),
+            overrides= config.get("overrides", {}),
             infra_path=Path(infra["infra_path"]) if infra.get("infra_path") else None,
             )
     )
