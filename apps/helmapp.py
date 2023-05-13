@@ -9,7 +9,6 @@ parent_dir = abspath(join(dirname(__file__), ".."))
 sys.path.insert(0, parent_dir)
 
 from apps.app import App
-from ignore_difference import IgnoreDifference
 from infrastructure_context import InfrastructureContext
 
 
@@ -18,10 +17,10 @@ class HelmApp(App):
         self,
         context: InfrastructureContext,
         values_file_path: Path,
-        ignore_differences: List[IgnoreDifference] = [],
+        overrides: dict = {},
     ):
         self.value_file_path = values_file_path
-        super().__init__(context, ignore_differences)
+        super().__init__(context, overrides)
 
     def get_name(self):
         return self.value_file_path.parts[-2]  # e.g. sonarr, radarr
@@ -36,6 +35,6 @@ class HelmApp(App):
         return self.value_file_path.parent.relative_to(self.context.repo_path).__str__()
 
     def setup_manifest(self) -> None:
-        super().setup_manifest()
         self.manifest["spec"]["source"]["helm"] = {}
         self.manifest["spec"]["source"]["helm"]["valueFiles"] = [self.value_file_path.name]
+        super().setup_manifest()

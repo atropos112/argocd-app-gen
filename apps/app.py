@@ -10,16 +10,24 @@ import yaml
 parent_dir = abspath(join(dirname(__file__), ".."))
 sys.path.insert(0, parent_dir)
 
-from ignore_difference import IgnoreDifference
 from infrastructure_context import InfrastructureContext
 
+    
+def merge_dicts(base: dict, override: dict):
+    merged = base.copy()
+    for key, value in override.items():
+        if key in base and isinstance(base[key], dict) and isinstance(value, dict):
+            merged[key] = merge_dicts(base[key], value)
+        else:
+            merged[key] = value
+    return merged
 
 class App(ABC):
     def __init__(
-        self, context: InfrastructureContext, ignore_differences: List[IgnoreDifference]
+        self, context: InfrastructureContext, overrides: dict
     ) -> None:
         self.context = context
-        self.ignore_differences = ignore_differences
+        self.overrides = overrides
 
         self.manifest = deepcopy(context.template)
         self.scope = self.get_scope()
@@ -97,6 +105,6 @@ class App(ABC):
             self.manifest["spec"]["syncPolicy"]["automated"]["prune"] = True
             self.manifest["spec"]["syncPolicy"]["automated"]["selfHeal"] = True
 
-        # Ignore differences
-        if self.ignore_differences:
-            self.manifest["spec"]["ignoreDifferences"] = [ignore_dif.to_json() for ignore_dif in self.ignore_differences]
+        # Overrides applied last if exist
+        if self.overrides:
+            self.manifest = merge_dicts(self.manifest, self.overrides)

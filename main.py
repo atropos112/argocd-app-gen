@@ -12,33 +12,18 @@ from pathlib import Path
 from shutil import rmtree
 import yaml
 
-from ignore_difference import IgnoreDifference
 from infrastructure import Infrastructure
 from infrastructure_context import InfrastructureContext
-from kind import Kind
 
 # 1. Preparation
 #   1.1. Load template
 with open(join(dirname(__file__), "app.tpl")) as f:
     template = yaml.safe_load(f)
 
-#   1.2. Load ignore differences
-ignore_differences = {
-    "metallb": [IgnoreDifference("apiextensions.k8s.io", Kind.CustomResourceDefinition, ["/spec/conversion"])],
-    "datree": [IgnoreDifference("", Kind.Secret, ["/data"])],
-    "cilium": [IgnoreDifference("", Kind.Secret, ["/data"])],
-    "argocd": [IgnoreDifference("", Kind.Secret, ["/data/admin.passwordMtime"])],
-    "tempo": [
-        IgnoreDifference("", Kind.Secret, ["/data"]),         
-        IgnoreDifference("apps", Kind.Deployment, ["/spec/template/metadata/annotations"])
-        ],
-    "harbor": [
-        IgnoreDifference("", Kind.Secret, ["/data"]),
-        IgnoreDifference(
-            "apps", Kind.Deployment, ["/spec/template/metadata/annotations"]
-        ),
-    ],
-}
+#   1.2. Load overrides
+with open(join(dirname(__file__), "overrides.yaml")) as f:
+    overrides = yaml.safe_load(f)
+
 
 # 2. Get all infrastructures
 infras = [
@@ -48,7 +33,7 @@ infras = [
             repo_url="git@gitlab.atro.xyz:inf/charts.git",
             template=template,
         ),
-        ignore_differences=ignore_differences,
+        overrides=overrides,
         infra_path=Path("/home/atropos/projects/Infra/k3s/apps"),
     ),
     Infrastructure(
@@ -57,7 +42,7 @@ infras = [
             repo_url="git@github.com:atropos112/k3s.git",
             template=template,
         ),
-        ignore_differences=ignore_differences,
+        overrides=overrides,
         infra_path=Path("/home/atropos/projects/Infra/k3s/core"),
     ),
     Infrastructure(
@@ -66,7 +51,7 @@ infras = [
             repo_url="git@gitlab.atro.xyz:inf/pipelines.git",
             template=template,
         ),
-        ignore_differences=ignore_differences
+        overrides=overrides
     ),
 ]
 

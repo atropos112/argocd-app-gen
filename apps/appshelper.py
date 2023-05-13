@@ -14,7 +14,6 @@ sys.path.insert(0, parent_dir)
 from apps.app import App
 from apps.helmapp import HelmApp
 from apps.yamlapp import YamlApp
-from ignore_difference import IgnoreDifference
 from infrastructure_context import InfrastructureContext
 
 # We create an App, which is a HelmApp or a YamlApp.
@@ -25,16 +24,16 @@ from infrastructure_context import InfrastructureContext
 def create_apps_from_path(
     context: InfrastructureContext,
     app_path: Path,
-    ignore_differences: List[IgnoreDifference],
+    overrides: dict,
 ) -> List[App]:
     apps = []
 
     match len(list(app_path.glob("Chart.y*ml"))):
         case 0:
-            apps.append(YamlApp(context, app_path, ignore_differences))
+            apps.append(YamlApp(context, app_path, overrides))
         case 1:
             for value_file_path in (file for file in app_path.glob("values.*.y*ml")):
-                apps.append(HelmApp(context, value_file_path, ignore_differences))
+                apps.append(HelmApp(context, value_file_path, overrides))
         case _:
             raise Exception(
                 "There are more than one Chart.y*ml files in the app folder."

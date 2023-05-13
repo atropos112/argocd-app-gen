@@ -10,7 +10,6 @@ sys.path.insert(0, parent_dir)
 
 # Now you should be able to import IgnoreDifference from ignore_difference module
 from apps.app import App
-from ignore_difference import IgnoreDifference
 from infrastructure_context import InfrastructureContext
 
 
@@ -19,10 +18,10 @@ class YamlApp(App):
         self,
         context: InfrastructureContext,
         app_path: Path,
-        ignore_differences: List[IgnoreDifference] = [],
+        overrides: dict = {},
     ):
         self.app_path = app_path
-        super().__init__(context, ignore_differences)
+        super().__init__(context, overrides)
 
     def get_name(self) -> str:
         return self.app_path.name  # e.g. sonarr, radarr
@@ -45,7 +44,7 @@ class YamlApp(App):
         return self.app_path.relative_to(self.context.repo_path).__str__()
 
     def setup_manifest(self) -> None:
-        super().setup_manifest()
         self.manifest["spec"]["source"]["directory"] = {}
         self.manifest["spec"]["source"]["directory"]["jsonnet"] = {}
         self.manifest["spec"]["source"]["directory"]["recurse"] = True
+        super().setup_manifest()

@@ -15,9 +15,7 @@ import yaml
 
 from apps.app import App
 from apps.appshelper import create_apps_from_path
-from ignore_difference import IgnoreDifference
 from infrastructure_context import InfrastructureContext
-from kind import Kind
 
 
 class Infrastructure:
@@ -31,11 +29,11 @@ class Infrastructure:
         self,
         context: InfrastructureContext,
         infra_path: Path = None,
-        ignore_differences: Dict[str, IgnoreDifference] = {},
+        overrides: dict = {},
     ) -> None:
         self.context = context
         self.infra_path = self.context.repo_path if infra_path is None else infra_path
-        self.ignore_differences = ignore_differences
+        self.overrides = overrides
 
         self.apps = self.get_apps()
 
@@ -71,7 +69,7 @@ class Infrastructure:
                     create_apps_from_path(
                         self.context,
                         app_folder,
-                        self.ignore_differences.get(app_folder.name, None),
+                        self.overrides.get(app_folder.name, None),
                     )
                 )
 
