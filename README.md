@@ -1,38 +1,34 @@
-# This is very much WIP.
-Namely I need to work on:
+# What does it do ?
 
-- Its not at all generic.
-- There are no tests.
-- ReadMe sucks.
+Under specific folder structure of a repository containing the application (bare yamls or helm charts) this python application generates all the corresponding `Application` custom resources for ArgoCD. It by default uses full-sync but with `ARGO_DEV_MODE=1` set sets to no sync. In addition it is possible to override default templating on application to application basis as well as changing the template for all the applications without touching any code (just `app.tpl`).
 
-# Aim
+# What are the requirements ?
 
-The aim of this project is to generate a yaml which is a custom resources of type `applications.argoproj.io`. This yaml should describe an application in a given repository. So that doing `kubectl apply -f thisyaml.yaml` will delpoy the application to ArgoCD which will the deploy it correctly to the cluster itself.
+Before I outline what structure is expected let me introduce my definition of scoped namespace. User may or may not opt for using scoped namespaces. When I say scoped I mean you may want to have a `media` namespace and then for a friend called Bob you may want to have a separate `media-bob` namespace allowing you to keep separation but on repository level not have to duplicate code as for a helm chart all this would require is a `values.yaml` that shares settings between all instances of an application and then `values.atro.yaml` for `media` namespace and `values.bob.yaml` for `media-bob` namespace. In this case `media` is the non-scoped and `media-bob` is the scoped namespace.
 
-# Definitions
-- A non-scoped namespace represents a namespace inside of kubernetes cluster, e.g. platform, monitoring, it doesn't have specific user or intent in mind.
-- A scoped-namespace represents a namespace inside of a kubernetes cluster, it is assigned to a specific user or a purpose, e.g. platform-trudo being trudo's platform namespace or general-yi, being the general namespace with scope yi.
-- Infrastructure folder is a folder which contains non-scoped namespaces as folders in its root directory with folders within them representing applications living in that namespace. 
+The folder structure expects to start with non-scoped namespaces followed by a per application folders. If the folder is a yaml file its expected to be in the non-scoped namespace *unless* a `scope.bob` file exists (`scope.bob` would indicate this should be installed in `mynamespace-bob` namespace). If its a helm chart it is instead divided by the values overrides file, namely the values.atro.yaml represents the non-scoped namespace meanwhile values.anythingelse.yaml would represent the chart in the scoped namespace (e.g. `values.bob.yaml` would deploy a helm chart to `mynamespace.bob` namespace).
 
+A user may have many repositories and can choose to "respect" the outlined folder structure starting from a subfolder rather than entire repository. In case user doesn't use scoped namespaces they still have to have override files called `values.atro.yaml` to indicate this is indeed meant to go to the non-scoped namespace.
 
-# Structure Of Repository
-Below I describe what repository is expected. I find that best way to describe why the structure has to be by briefly explainig what problem occured and how it was solved.
+## Example
+platform
+ -> harbor: values.yaml, values.atro.yaml, templates, Chart.yaml
+ -> argocd: values.yaml, values.atro.yaml, Chart.yaml
+media
+ -> sonarr: values.yaml, values.atro.yaml, values.bob.yaml, Chart.yaml, templates
+ -> navidrome: values.yaml, values.bob.yaml, Chart.yaml
+ -> radarr: all.yaml, scope.bob
+kube-system
+ -> metallb: all.yaml
 
-### Problem 1
-In terms of structure a simplest way to go is to have a repository with folders in root directory representing non-scoped namespaces, in reality hosting the GitOps on the very infrastructure we are running on is risky, and this risk shouldn't exist for some applications.
+Would create applications for
+- harbor in platform namespace (using `values.atro.yaml` overriding the `values.yaml`)
+- argocd in platform namespace (same as harbor)
+- sonarr in media namespace with `values.yaml -> values.atro.yaml` and in media-bob with `values.yaml -> values.bob.yaml`
+- navidrome in namespace media-bob with `values.yaml -> values.bob.yaml`
+- radarr in namespace media-bob with just the yamls applied as they are
+- metallb in kube-system namespace with yamls applied as they are
 
-As a result the following complication is made. A git repository may be an infrastructure folder or it can have multiple infrastructure folders in its root directory. As a result the root directory in a git repository has folders that are in fact infrastructure folders. This allows for a repository to have two folders in its root say `core` and `apps` where `core` should only be reconciled from a mirrored repository for extra safety while `apps` should be reconciled from this repository for extra speed (shorter dev loop).
+# Using this
 
-
-### Problem 2
-Once we are in an infrastructure folder how does one decide if the application should be deployed in the non-scoped namespace or scoped-namespace. You could simply have scoped-namespaces along with non-scoped namespaces in the infrastructure folder but that would lead to a lot of duplication, so thats a no.
-
-The applications are either bunch of yamls or a helm chart. A helm chart is easily resolved by calling the overdies file `values.<scope>.yaml` where `scope=atro` is the non-scoped case while anything else deploys to a scoped-namespace. With yamls, either duplication is an issue which means it should be turned into a yaml or duplication is not an issue. If duplication is not an issue the application folder is to end with `-<scope>` to signal which scoped-namespace to deploy into, if the `-<scope>` is missing its deployed to non-scoped namespace.
-
-# Using this repository
-Start with cloning/forking it. Then locally activate pre-comit-config with
-
-```bash
-pip install pre-commit
-pre-commit install
-```
+TO EXPLAIN.
