@@ -29,7 +29,7 @@ class App(ABC):
         self.context = context
         self.overrides = overrides
 
-        self.manifest = deepcopy(context.template)
+        self.manifest = deepcopy(context.template) # type: ignore
         self.scope = self.get_scope()
         self.name = self.get_name()
         self.namespace = self.get_namespace()

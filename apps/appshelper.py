@@ -8,6 +8,8 @@ from typing import List
 
 import yaml
 
+from apps.atroapp import AtroApp
+
 # Add the parent directory to the Python path
 parent_dir = abspath(join(dirname(__file__), ".."))
 sys.path.insert(0, parent_dir)
@@ -28,15 +30,15 @@ def create_apps_from_path(
 ) -> List[App]:
     apps = []
 
-    match len(list(app_path.glob("Chart.y*ml"))):
-        case 0:
-            apps.append(YamlApp(context, app_path, overrides))
-        case 1:
-            for value_file_path in (file for file in app_path.glob("values.*.y*ml")):
-                apps.append(HelmApp(context, value_file_path, overrides))
-        case _:
-            raise Exception(
-                "There are more than one Chart.y*ml files in the app folder."
-            )
+    if len(list(app_path.glob("Chart.y*ml"))) == 1:
+        for value_file_path in (file for file in app_path.glob("values.*.y*ml")):
+            apps.append(HelmApp(context, value_file_path, overrides))
+    elif len(list(app_path.glob("Atro.yaml"))) == 1:
+        for value_file_path in (file for file in app_path.glob("values.*.y*ml")):
+            apps.append(AtroApp(context, value_file_path, overrides))
+    elif len(list(app_path.glob("*.y*ml"))) > 0:
+        apps.append(YamlApp(context, app_path, overrides))
+    else:
+        raise Exception(f"The app under path {app_path.as_posix()} is not recognized.")
 
     return apps
