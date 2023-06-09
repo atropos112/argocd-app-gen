@@ -36,9 +36,7 @@ def create_apps_from_path(
     elif len(list(app_path.glob("Atro.yaml"))) == 1:
         for value_file_path in (file for file in app_path.glob("values.*.y*ml")):
             apps.append(AtroApp(context, value_file_path, overrides))
-    elif len(list(app_path.glob("*.y*ml"))) > 0:
-        apps.append(YamlApp(context, app_path, overrides))
     else:
-        raise Exception(f"The app under path {app_path.as_posix()} is not recognized.")
+        apps.append(YamlApp(context, app_path, overrides))
 
     return apps
