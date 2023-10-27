@@ -7,6 +7,9 @@ metadata:
   namespace: platform
 spec:
   ignoreDifferences: []
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
   destination:
     namespace: _NAMESPACE
     server: https://kubernetes.default.svc

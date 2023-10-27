@@ -1,13 +1,7 @@
 
 infrastructures:
-  - repo_path: "/home/atropos/projects/Infra/k3s" 
-    infra_path: "/home/atropos/projects/Infra/k3s/apps"
-    repo_url: "git@gitlab.atro.xyz:inf/charts.git"
   - repo_path: "/home/atropos/projects/Infra/k3s"
-    infra_path: "/home/atropos/projects/Infra/k3s/core"
     repo_url: "git@github.com:atropos112/k3s.git"
-  - repo_path: "/home/atropos/projects/Infra/pipelines"
-    repo_url: "git@gitlab.atro.xyz:inf/pipelines.git"
 
 
 overrides:
